@@ -1,0 +1,519 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - BuildAI</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="{{ url_for('static', filename='js/language.js') }}" defer></script>
+
+    <style>
+        .main-content { min-width: 0; }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 25px 0 22px;
+        }
+
+        .report-header h2 {
+            font-weight: 700;
+            color: var(--report-heading, #172b4d);
+            margin-bottom: 5px;
+        }
+
+        .report-header p {
+            color: var(--report-muted, #718096);
+            margin-bottom: 0;
+        }
+
+        .report-stat {
+            height: 100%;
+            border: 1px solid var(--report-border, #e8edf5);
+            border-radius: 14px;
+            background: var(--report-card, #fff);
+            box-shadow: 0 5px 18px rgba(20,40,80,.06);
+            padding: 22px;
+        }
+
+        .report-stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 17px;
+        }
+
+        .report-stat-icon {
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 19px;
+            flex-shrink: 0;
+        }
+
+        .icon-blue { background: #e8f0ff; color: #2459c4; }
+        .icon-green { background: #e4f8ee; color: #168653; }
+        .icon-orange { background: #fff0df; color: #d97912; }
+
+        .report-stat h6 {
+            color: var(--report-muted, #718096);
+            font-size: 14px;
+            margin-bottom: 9px;
+        }
+
+        .report-stat h3 {
+            color: var(--report-heading, #172b4d);
+            font-size: clamp(20px, 2vw, 27px);
+            font-weight: 750;
+            overflow-wrap: anywhere;
+            margin: 0;
+        }
+
+        .report-panel {
+            background: var(--report-card, #fff);
+            border: 1px solid var(--report-border, #e8edf5);
+            border-radius: 14px;
+            padding: 22px;
+            margin-top: 25px;
+            box-shadow: 0 5px 18px rgba(20,40,80,.05);
+        }
+
+        .report-panel h4 {
+            font-weight: 700;
+            color: var(--report-heading, #172b4d);
+            margin: 0;
+        }
+
+        .report-panel small,
+        .report-panel .text-secondary {
+            color: var(--report-muted, #718096) !important;
+        }
+
+        .report-table {
+            vertical-align: middle;
+            margin-bottom: 0;
+            color: var(--report-text, #243653);
+        }
+
+        .report-table thead th {
+            background: var(--report-table-head, #edf3ff);
+            color: var(--report-table-heading, #203b68);
+            font-size: 13px;
+            white-space: nowrap;
+            padding: 14px 12px;
+        }
+
+        .report-table tbody td {
+            padding: 13px 12px;
+            font-size: 14px;
+        }
+
+        .report-table tbody tr:hover {
+            background: var(--report-row-hover, #f8faff);
+        }
+
+        .cost-value {
+            color: #168653;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .report-empty {
+            padding: 45px 15px !important;
+            text-align: center;
+            color: var(--report-muted, #718096);
+        }
+
+        .report-empty i {
+            display: block;
+            font-size: 35px;
+            margin-bottom: 12px;
+            color: #a6b4c8;
+        }
+
+        .report-footer {
+            color: var(--report-muted, #7b8798);
+            font-size: 13px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .report-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            background: var(--report-card, #fff);
+            color: var(--report-heading, #172b4d);
+            border: 1px solid var(--report-border, #e8edf5);
+            border-radius: 12px;
+        }
+
+        .report-topbar h3 {
+            font-size: 24px;
+            font-weight: 750;
+            margin: 0;
+        }
+
+        .theme-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .theme-control input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #2563eb;
+        }
+
+        /* Dark mode */
+        html.dark-mode body,
+        body.dark-mode {
+            background: #0b1220 !important;
+            color: #e5edf8 !important;
+        }
+
+        html.dark-mode .main-content,
+        body.dark-mode .main-content {
+            background: #0b1220 !important;
+            color: #e5edf8 !important;
+        }
+
+        html.dark-mode .report-topbar,
+        body.dark-mode .report-topbar,
+        html.dark-mode .report-stat,
+        body.dark-mode .report-stat,
+        html.dark-mode .report-panel,
+        body.dark-mode .report-panel {
+            background: #111d30 !important;
+            color: #e5edf8 !important;
+            border-color: #293951 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark-mode .report-header h2,
+        body.dark-mode .report-header h2,
+        html.dark-mode .report-stat h3,
+        body.dark-mode .report-stat h3,
+        html.dark-mode .report-panel h4,
+        body.dark-mode .report-panel h4,
+        html.dark-mode .report-topbar,
+        body.dark-mode .report-topbar,
+        html.dark-mode .theme-control,
+        body.dark-mode .theme-control {
+            color: #e5edf8 !important;
+        }
+
+        html.dark-mode .report-header p,
+        body.dark-mode .report-header p,
+        html.dark-mode .report-stat h6,
+        body.dark-mode .report-stat h6,
+        html.dark-mode .report-panel small,
+        body.dark-mode .report-panel small,
+        html.dark-mode .report-footer,
+        body.dark-mode .report-footer {
+            color: #aabbd2 !important;
+        }
+
+        html.dark-mode .report-table,
+        body.dark-mode .report-table {
+            --bs-table-bg: #111d30;
+            --bs-table-color: #e5edf8;
+            --bs-table-border-color: #293951;
+            --bs-table-hover-bg: #1a2a42;
+            --bs-table-hover-color: #fff;
+        }
+
+        html.dark-mode .report-table thead th,
+        body.dark-mode .report-table thead th {
+            background: #1b2b45 !important;
+            color: #dce8ff !important;
+            border-color: #344761 !important;
+        }
+
+        html.dark-mode .report-table tbody td,
+        body.dark-mode .report-table tbody td {
+            color: #e5edf8 !important;
+            border-color: #293951 !important;
+        }
+
+        html.dark-mode .report-table tbody tr:hover,
+        body.dark-mode .report-table tbody tr:hover {
+            background: #1a2a42 !important;
+        }
+
+        html.dark-mode .report-empty,
+        body.dark-mode .report-empty {
+            color: #aabbd2 !important;
+        }
+
+        @media (max-width: 768px) {
+            .report-panel { padding: 15px; }
+            .report-stat { padding: 18px; }
+            .report-topbar h3 { font-size: 20px; }
+        }
+
+        @media print {
+            @page { size: landscape; margin: 12mm; }
+
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                font-size: 11px;
+            }
+
+            .sidebar, .no-print, .report-footer {
+                display: none !important;
+            }
+
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            .report-header { margin-top: 0; }
+
+            .report-stat, .report-panel {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                break-inside: avoid;
+            }
+
+            .report-table {
+                width: 100%;
+                border-collapse: collapse !important;
+            }
+
+            .report-table th, .report-table td {
+                border: 1px solid #bbb !important;
+                color: #000 !important;
+            }
+
+            .report-table thead th {
+                background: #e9eef5 !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .row { display: flex; flex-wrap: nowrap; }
+            .col-md-4 { width: 33.333333%; }
+            .btn { display: none !important; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="d-flex">
+
+    <aside class="sidebar no-print">
+        <h2 class="logo">
+            <i class="fa-solid fa-city"></i>
+            BuildAI
+        </h2>
+
+        <ul>
+            <li>
+                <a href="{{ url_for('dashboard') }}">
+                    <i class="fa-solid fa-house"></i>
+                    <span data-i18n="dashboard">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('prediction') }}">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span data-i18n="prediction">Prediction</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="{{ url_for('reports') }}">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span data-i18n="reports">Reports</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('history') }}">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span data-i18n="history">History</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('settings') }}">
+                    <i class="fa-solid fa-gear"></i>
+                    <span data-i18n="settings">Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span data-i18n="logout">Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="report-topbar no-print">
+            <h3>
+                <i class="fa-solid fa-file-invoice-dollar me-2"></i>
+                <span data-i18n="reports">Reports</span>
+            </h3>
+
+            <label class="theme-control" for="darkModeToggle">
+                <i class="fa-solid fa-moon"></i>
+                <span data-i18n="darkMode">Dark Mode</span>
+                <input type="checkbox" id="darkModeToggle"
+                       data-dark-mode-toggle aria-label="Toggle dark mode">
+            </label>
+        </header>
+
+        <section class="report-header">
+            <div>
+                <h2 data-i18n="constructionCostReports">Construction Cost Reports</h2>
+                <p data-i18n="viewPrintReports">
+                    View and print your saved construction cost predictions.
+                </p>
+            </div>
+            <button type="button" class="btn btn-primary no-print" onclick="window.print()">
+                <i class="fa-solid fa-print me-2"></i>
+                <span data-i18n="printReport">Print Report</span>
+            </button>
+        </section>
+
+        <section class="row g-3">
+            <div class="col-md-4">
+                <div class="report-stat">
+                    <div class="report-stat-top">
+                        <h6 class="mb-0" data-i18n="totalPredictions">Total Predictions</h6>
+                        <div class="report-stat-icon icon-blue">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                    </div>
+                    <h3>{{ total_predictions|default(0) }}</h3>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-stat">
+                    <div class="report-stat-top">
+                        <h6 class="mb-0" data-i18n="averageEstimatedCost">Average Estimated Cost</h6>
+                        <div class="report-stat-icon icon-green">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <h3>₹ {{ "{:,.2f}".format(average_cost|default(0)|float) }}</h3>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="report-stat">
+                    <div class="report-stat-top">
+                        <h6 class="mb-0" data-i18n="totalEstimatedCost">Total Estimated Cost</h6>
+                        <div class="report-stat-icon icon-orange">
+                            <i class="fa-solid fa-indian-rupee-sign"></i>
+                        </div>
+                    </div>
+                    <h3>₹ {{ "{:,.2f}".format(total_cost|default(0)|float) }}</h3>
+                </div>
+            </div>
+        </section>
+
+        <section class="report-panel">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div>
+                    <h4>
+                        <i class="fa-solid fa-table-list me-2"></i>
+                        <span data-i18n="predictionRecords">Prediction Records</span>
+                    </h4>
+                    <small data-i18n="savedAccountPredictions">
+                        Only predictions saved to your account are listed here.
+                    </small>
+                </div>
+
+                <span class="badge text-bg-primary">
+                    {{ total_predictions|default(0) }}
+                    <span data-i18n="records">Records</span>
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered report-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="id">ID</th>
+                            <th data-i18n="projectName">Project Name</th>
+                            <th data-i18n="location">Location</th>
+                            <th data-i18n="area">Area</th>
+                            <th data-i18n="floors">Floors</th>
+                            <th data-i18n="predictedCost">Predicted Cost</th>
+                            <th data-i18n="predictionDate">Prediction Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prediction in predictions %}
+                        <tr>
+                            <td>{{ prediction["id"] }}</td>
+                            <td class="fw-semibold">{{ prediction["project_name"] }}</td>
+                            <td>{{ prediction["location"] or "—" }}</td>
+                            <td>
+                                {{ "{:,.2f}".format((prediction["area"] or 0)|float) }}
+                                <span data-i18n="sqft">Sq.ft</span>
+                            </td>
+                            <td>{{ prediction["floors"] or "—" }}</td>
+                            <td class="cost-value">
+                                ₹ {{ "{:,.2f}".format((prediction["predicted_cost"] or 0)|float) }}
+                            </td>
+                            <td>{{ prediction["prediction_date"] or "—" }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="report-empty">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <strong data-i18n="noReports">No prediction reports available yet.</strong>
+                                <div class="mt-2" data-i18n="generatePredictionFirst">
+                                    Generate a prediction first. Once it is saved, it will appear here automatically.
+                                </div>
+                                <div class="mt-3 no-print">
+                                    <a href="{{ url_for('prediction') }}" class="btn btn-primary btn-sm">
+                                        <i class="fa-solid fa-plus me-1"></i>
+                                        <span data-i18n="createPrediction">Create Prediction</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="report-footer">
+            <span data-i18n="copyright">© 2026 BuildAI | Construction Cost Prediction System</span>
+        </footer>
+
+    </main>
+</div>
+</body>
+</html>

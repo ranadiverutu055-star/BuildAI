@@ -1,0 +1,891 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - BuildAI</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            background: #f3f6fb;
+            color: #17243a;
+            font-family: Arial, sans-serif;
+        }
+
+        .settings-container {
+            max-width: 1500px;
+            margin: auto;
+            padding: 30px;
+        }
+
+        .settings-title { margin-bottom: 25px; }
+        .settings-title h1 { font-size: 30px; font-weight: 800; }
+        .settings-title h1 i { color: #2563eb; }
+        .settings-title p { color: #7b879b; }
+
+        .settings-card {
+            background: #fff;
+            border: 1px solid #e5eaf2;
+            border-radius: 17px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 28px rgba(25,45,80,.05);
+        }
+
+        .settings-card-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 19px;
+            font-weight: 800;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .settings-card-title i {
+            display: grid;
+            place-items: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: #edf3ff;
+            color: #2563eb;
+        }
+
+        .settings-profile {
+            display: grid;
+            grid-template-columns: 180px minmax(0,1fr);
+            gap: 30px;
+        }
+
+        .settings-photo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .settings-photo img {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e8eefb;
+            background: #edf3ff;
+        }
+
+        .change-photo-btn {
+            background: #f5f8ff;
+            color: #2563eb;
+            border: 1px solid #dce5f5;
+            border-radius: 9px;
+            padding: 10px 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .settings-form {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 20px;
+        }
+
+        .settings-field {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-width: 0;
+        }
+
+        .settings-field label {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .settings-field input,
+        .settings-field select {
+            width: 100%;
+            min-height: 46px;
+            padding: 11px 13px;
+            border: 1px solid #dfe6f0;
+            border-radius: 9px;
+            outline: none;
+            background: white;
+            color: #243149;
+        }
+
+        .settings-field input:focus,
+        .settings-field select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+        }
+
+        .settings-save-btn,
+        .password-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            width: fit-content;
+            min-height: 46px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .settings-save-btn:hover,
+        .password-button:hover { background: #1d4ed8; }
+
+        .settings-form .settings-save-btn,
+        .password-form .password-button { grid-column: 1 / -1; }
+
+        .password-form {
+            display: grid;
+            grid-template-columns: repeat(3,minmax(0,1fr));
+            gap: 22px;
+            align-items: end;
+        }
+
+        .password-input-wrap {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .password-input-wrap input { padding-right: 48px; }
+
+        .toggle-password {
+            position: absolute;
+            right: 7px;
+            width: 36px;
+            height: 36px;
+            border: 0;
+            background: transparent;
+            color: #718096;
+            cursor: pointer;
+        }
+
+        .form-message {
+            display: none;
+            padding: 12px 15px;
+            margin-top: 18px;
+            border-radius: 9px;
+            font-size: 13px;
+        }
+
+        .form-message.success {
+            display: block;
+            color: #146c43;
+            background: #d9f5e5;
+        }
+
+        .form-message.error {
+            display: block;
+            color: #a52834;
+            background: #fce2e4;
+        }
+
+        .preferences-list { display: flex; flex-direction: column; }
+
+        .preference-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .preference-item:last-child { border-bottom: none; }
+
+        .preference-info h4 {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .preference-info p {
+            color: #7b879b;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .preference-item input {
+            cursor: pointer;
+        }
+
+        .settings-container footer {
+            color: #8a96a8;
+            font-size: 12px;
+            padding: 10px 0 20px;
+        }
+
+        body.dark-mode {
+            background: #111827;
+            color: #e5e7eb;
+        }
+
+        body.dark-mode .settings-card,
+        body.dark-mode .navbar {
+            background: #1f2937;
+            color: #e5e7eb;
+            border-color: #374151;
+        }
+
+        body.dark-mode .settings-title h1,
+        body.dark-mode .settings-card-title,
+        body.dark-mode .settings-field label,
+        body.dark-mode .preference-info h4 {
+            color: #e5e7eb;
+        }
+
+        body.dark-mode .settings-title p,
+        body.dark-mode .preference-info p {
+            color: #aeb9ca;
+        }
+
+        body.dark-mode .settings-field input,
+        body.dark-mode .settings-field select,
+        body.dark-mode .form-select {
+            background: #111827;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        body.dark-mode .settings-card-title,
+        body.dark-mode .preference-item {
+            border-color: #374151;
+        }
+
+        @media(max-width:950px) {
+            .settings-profile { grid-template-columns: 1fr; }
+            .settings-photo { align-items: flex-start; }
+            .password-form { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        }
+
+        @media(max-width:600px) {
+            .settings-container { padding: 20px 14px; }
+            .settings-card { padding: 18px; }
+            .settings-title h1 { font-size: 24px; }
+            .settings-form,
+            .password-form { grid-template-columns: 1fr; }
+
+            .settings-form .settings-save-btn,
+            .password-form .password-button {
+                grid-column: auto;
+                width: 100%;
+            }
+
+            .preference-item { gap: 12px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="sidebar">
+    <a href="{{ url_for('dashboard') }}" class="logo">
+        <i class="fa-solid fa-city"></i><span>BuildAI</span>
+    </a>
+
+    <ul>
+        <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i><span data-i18n="navDashboard">Dashboard</span></a></li>
+        <li><a href="{{ url_for('prediction') }}"><i class="fas fa-calculator"></i><span data-i18n="navPrediction">Prediction</span></a></li>
+        <li><a href="{{ url_for('reports') }}"><i class="fas fa-file-pdf"></i><span data-i18n="navReports">Reports</span></a></li>
+        <li><a href="{{ url_for('history') }}"><i class="fas fa-history"></i><span data-i18n="navHistory">History</span></a></li>
+        <li class="active"><a href="{{ url_for('settings') }}"><i class="fas fa-cog"></i><span data-i18n="navSettings">Settings</span></a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i><span data-i18n="navLogout">Logout</span></a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="navbar">
+        <h3 data-i18n="pageHeading">Settings</h3>
+
+        <div class="d-flex align-items-center gap-3">
+            <i class="fas fa-bell" style="font-size:20px;color:#2563eb"></i>
+
+            {% if user and user['profile_picture'] %}
+                <img class="header-profile-photo"
+                     src="{{ url_for('static', filename=user['profile_picture']) }}"
+                     alt="Profile"
+                     style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+            {% else %}
+                <i class="fas fa-user-circle header-profile-placeholder"
+                   style="font-size:30px;color:#2563eb"></i>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="settings-container">
+        <div class="settings-title">
+            <h1><i class="fas fa-cog"></i> <span data-i18n="pageHeading">Settings</span></h1>
+            <p data-i18n="pageDescription">Manage your BuildAI account and application preferences.</p>
+        </div>
+
+        <section class="settings-card">
+            <div class="settings-card-title">
+                <i class="fas fa-user"></i>
+                <span data-i18n="profileSettings">Profile Settings</span>
+            </div>
+
+            <div class="settings-profile">
+                <div class="settings-photo">
+                    {% if user and user['profile_picture'] %}
+                        <img id="profilePhoto"
+                             src="{{ url_for('static', filename=user['profile_picture']) }}"
+                             alt="Profile photo">
+                    {% else %}
+                        <img id="profilePhoto"
+                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' rx='60' fill='%23edf3ff'/%3E%3Ccircle cx='60' cy='43' r='21' fill='%232563eb'/%3E%3Cpath d='M20 108c3-25 19-38 40-38s37 13 40 38' fill='%232563eb'/%3E%3C/svg%3E"
+                             alt="Default profile icon">
+                    {% endif %}
+
+                    <input type="file" id="profilePhotoInput"
+                           accept="image/png,image/jpeg,image/webp" hidden>
+
+                    <button type="button" class="change-photo-btn" id="changePhotoBtn">
+                        <i class="fas fa-camera"></i>
+                        <span data-i18n="changePhoto">Change Photo</span>
+                    </button>
+                </div>
+
+                <div class="settings-form">
+                    <div class="settings-field">
+                        <label for="fullName" data-i18n="fullName">Full Name</label>
+                        <input type="text" id="fullName"
+                               value="{{ user['name'] if user and user['name'] else '' }}"
+                               placeholder="Enter your full name"
+                               data-i18n-placeholder="namePlaceholder">
+                    </div>
+
+                    <div class="settings-field">
+                        <label for="email" data-i18n="email">Email</label>
+                        <input type="email" id="email"
+                               value="{{ user['email'] if user and user['email'] else '' }}"
+                               readonly>
+                    </div>
+
+                    <div class="settings-field">
+                        <label for="role" data-i18n="role">Role</label>
+                        <input type="text" id="role"
+                               value="{{ user['role'] if user and user['role'] else 'User' }}"
+                               readonly>
+                    </div>
+
+                    <div class="settings-field">
+                        <label for="phone" data-i18n="phone">Phone Number</label>
+                        <input type="tel" id="phone"
+                               value="{{ user['phone'] if user and user['phone'] else '' }}"
+                               placeholder="Enter phone number"
+                               data-i18n-placeholder="phonePlaceholder">
+                    </div>
+
+                    <button type="button" class="settings-save-btn" id="saveProfileBtn">
+                        <i class="fas fa-save"></i>
+                        <span data-i18n="saveProfile">Save Profile</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="profileMessage" class="form-message" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="settings-card">
+            <div class="settings-card-title">
+                <i class="fas fa-lock"></i>
+                <span data-i18n="changePassword">Change Password</span>
+            </div>
+
+            <form id="passwordForm" class="password-form" autocomplete="off">
+                <div class="settings-field">
+                    <label for="currentPassword" data-i18n="currentPassword">Current Password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="currentPassword"
+                               placeholder="Current password"
+                               data-i18n-placeholder="currentPasswordPlaceholder"
+                               autocomplete="current-password" required>
+                        <button type="button" class="toggle-password" data-target="currentPassword"
+                                aria-label="Show or hide password">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-field">
+                    <label for="newPassword" data-i18n="newPassword">New Password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="newPassword"
+                               placeholder="Minimum 6 characters"
+                               data-i18n-placeholder="newPasswordPlaceholder"
+                               minlength="6" autocomplete="new-password" required>
+                        <button type="button" class="toggle-password" data-target="newPassword"
+                                aria-label="Show or hide password">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-field">
+                    <label for="confirmPassword" data-i18n="confirmPassword">Confirm Password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="confirmPassword"
+                               placeholder="Confirm new password"
+                               data-i18n-placeholder="confirmPasswordPlaceholder"
+                               autocomplete="new-password" required>
+                        <button type="button" class="toggle-password" data-target="confirmPassword"
+                                aria-label="Show or hide password">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="password-button" id="changePasswordBtn">
+                    <i class="fas fa-key"></i>
+                    <span data-i18n="updatePassword">Change Password</span>
+                </button>
+            </form>
+
+            <div id="passwordMessage" class="form-message" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="settings-card">
+            <div class="settings-card-title">
+                <i class="fas fa-sliders-h"></i>
+                <span data-i18n="appPreferences">Application Preferences</span>
+            </div>
+
+            <div class="preferences-list">
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h4 data-i18n="language">Language</h4>
+                        <p data-i18n="languageDescription">Choose your preferred language across BuildAI.</p>
+                    </div>
+
+                    <div style="width:180px;max-width:45%">
+                        <select id="languageSelect" class="form-select" aria-label="Language">
+                            <option value="en">English</option>
+                            <option value="mr">मराठी</option>
+                            <option value="hi">हिन्दी</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h4 data-i18n="darkMode">Dark Mode</h4>
+                        <p data-i18n="darkModeDescription">Use dark theme.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h4 data-i18n="notifications">Notifications</h4>
+                        <p data-i18n="notificationsDescription">Receive notifications about your predictions.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="notificationToggle">
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <h4 data-i18n="emailUpdates">Email Updates</h4>
+                        <p data-i18n="emailUpdatesDescription">Receive important updates and reports by email.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="emailUpdatesToggle">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer data-i18n="footerText">© 2026 BuildAI — Construction Cost Prediction System</footer>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const $ = id => document.getElementById(id);
+
+    const translations = {
+        en: {
+            navDashboard:"Dashboard", navPrediction:"Prediction",
+            navReports:"Reports", navHistory:"History",
+            navSettings:"Settings", navLogout:"Logout",
+            pageHeading:"Settings",
+            pageDescription:"Manage your BuildAI account and application preferences.",
+            profileSettings:"Profile Settings", changePhoto:"Change Photo",
+            fullName:"Full Name", email:"Email", role:"Role",
+            phone:"Phone Number", saveProfile:"Save Profile",
+            changePassword:"Change Password", currentPassword:"Current Password",
+            newPassword:"New Password", confirmPassword:"Confirm Password",
+            updatePassword:"Change Password", appPreferences:"Application Preferences",
+            language:"Language",
+            languageDescription:"Choose your preferred language across BuildAI.",
+            darkMode:"Dark Mode", darkModeDescription:"Use dark theme.",
+            notifications:"Notifications",
+            notificationsDescription:"Receive notifications about your predictions.",
+            emailUpdates:"Email Updates",
+            emailUpdatesDescription:"Receive important updates and reports by email.",
+            namePlaceholder:"Enter your full name",
+            phonePlaceholder:"Enter phone number",
+            currentPasswordPlaceholder:"Current password",
+            newPasswordPlaceholder:"Minimum 6 characters",
+            confirmPasswordPlaceholder:"Confirm new password",
+            footerText:"© 2026 BuildAI — Construction Cost Prediction System",
+            uploadPhoto:"Uploading...",
+            invalidPhoto:"Select a JPG, PNG or WEBP image.",
+            photoTooLarge:"Photo size must be 5 MB or less.",
+            photoUploadFailed:"Photo upload failed.",
+            enterName:"Please enter your full name.",
+            profileSaveFailed:"Profile could not be saved.",
+            passwordTooShort:"New password must be at least 6 characters.",
+            passwordsMismatch:"Passwords do not match.",
+            passwordSame:"New password must be different.",
+            passwordFailed:"Unable to change password."
+        },
+        mr: {
+            navDashboard:"डॅशबोर्ड", navPrediction:"अंदाज",
+            navReports:"रिपोर्ट्स", navHistory:"इतिहास",
+            navSettings:"सेटिंग्ज", navLogout:"लॉगआउट",
+            pageHeading:"सेटिंग्ज",
+            pageDescription:"तुमचे BuildAI खाते आणि ॲपच्या सेटिंग्ज व्यवस्थापित करा.",
+            profileSettings:"प्रोफाइल सेटिंग्ज", changePhoto:"फोटो बदला",
+            fullName:"पूर्ण नाव", email:"ईमेल", role:"भूमिका",
+            phone:"फोन नंबर", saveProfile:"प्रोफाइल सेव्ह करा",
+            changePassword:"पासवर्ड बदला", currentPassword:"सध्याचा पासवर्ड",
+            newPassword:"नवीन पासवर्ड", confirmPassword:"पासवर्डची पुष्टी करा",
+            updatePassword:"पासवर्ड बदला", appPreferences:"ॲपच्या पसंती",
+            language:"भाषा",
+            languageDescription:"BuildAI मधील सर्व पेजसाठी तुमची भाषा निवडा.",
+            darkMode:"डार्क मोड", darkModeDescription:"डार्क थीम वापरा.",
+            notifications:"सूचना",
+            notificationsDescription:"तुमच्या अंदाजांबद्दल सूचना मिळवा.",
+            emailUpdates:"ईमेल अपडेट्स",
+            emailUpdatesDescription:"महत्त्वाचे अपडेट्स आणि रिपोर्ट ईमेलने मिळवा.",
+            namePlaceholder:"तुमचे पूर्ण नाव लिहा",
+            phonePlaceholder:"फोन नंबर लिहा",
+            currentPasswordPlaceholder:"सध्याचा पासवर्ड",
+            newPasswordPlaceholder:"किमान ६ अक्षरे",
+            confirmPasswordPlaceholder:"नवीन पासवर्ड पुन्हा लिहा",
+            footerText:"© 2026 BuildAI — बांधकाम खर्च अंदाज प्रणाली",
+            uploadPhoto:"फोटो अपलोड होत आहे...",
+            invalidPhoto:"JPG, PNG किंवा WEBP फोटो निवडा.",
+            photoTooLarge:"फोटोचा आकार 5 MB किंवा त्यापेक्षा कमी असावा.",
+            photoUploadFailed:"फोटो अपलोड झाला नाही.",
+            enterName:"कृपया तुमचे पूर्ण नाव लिहा.",
+            profileSaveFailed:"प्रोफाइल सेव्ह झाले नाही.",
+            passwordTooShort:"नवीन पासवर्ड किमान ६ अक्षरांचा असावा.",
+            passwordsMismatch:"दोन्ही पासवर्ड जुळत नाहीत.",
+            passwordSame:"नवीन पासवर्ड वेगळा असावा.",
+            passwordFailed:"पासवर्ड बदलता आला नाही."
+        },
+        hi: {
+            navDashboard:"डैशबोर्ड", navPrediction:"अनुमान",
+            navReports:"रिपोर्ट", navHistory:"इतिहास",
+            navSettings:"सेटिंग्स", navLogout:"लॉग आउट",
+            pageHeading:"सेटिंग्स",
+            pageDescription:"अपने BuildAI खाते और ऐप की प्राथमिकताएँ प्रबंधित करें।",
+            profileSettings:"प्रोफ़ाइल सेटिंग्स", changePhoto:"फ़ोटो बदलें",
+            fullName:"पूरा नाम", email:"ईमेल", role:"भूमिका",
+            phone:"फ़ोन नंबर", saveProfile:"प्रोफ़ाइल सेव करें",
+            changePassword:"पासवर्ड बदलें", currentPassword:"वर्तमान पासवर्ड",
+            newPassword:"नया पासवर्ड", confirmPassword:"पासवर्ड की पुष्टि करें",
+            updatePassword:"पासवर्ड बदलें", appPreferences:"ऐप प्राथमिकताएँ",
+            language:"भाषा",
+            languageDescription:"BuildAI के सभी पेजों के लिए अपनी भाषा चुनें।",
+            darkMode:"डार्क मोड", darkModeDescription:"डार्क थीम इस्तेमाल करें।",
+            notifications:"सूचनाएँ",
+            notificationsDescription:"अपने अनुमानों के बारे में सूचनाएँ प्राप्त करें।",
+            emailUpdates:"ईमेल अपडेट",
+            emailUpdatesDescription:"महत्वपूर्ण अपडेट और रिपोर्ट ईमेल से प्राप्त करें।",
+            namePlaceholder:"अपना पूरा नाम दर्ज करें",
+            phonePlaceholder:"फ़ोन नंबर दर्ज करें",
+            currentPasswordPlaceholder:"वर्तमान पासवर्ड",
+            newPasswordPlaceholder:"कम से कम 6 अक्षर",
+            confirmPasswordPlaceholder:"नया पासवर्ड फिर दर्ज करें",
+            footerText:"© 2026 BuildAI — निर्माण लागत अनुमान प्रणाली",
+            uploadPhoto:"फ़ोटो अपलोड हो रही है...",
+            invalidPhoto:"JPG, PNG या WEBP फ़ोटो चुनें।",
+            photoTooLarge:"फ़ोटो का आकार 5 MB या उससे कम होना चाहिए।",
+            photoUploadFailed:"फ़ोटो अपलोड नहीं हुई।",
+            enterName:"कृपया अपना पूरा नाम दर्ज करें।",
+            profileSaveFailed:"प्रोफ़ाइल सेव नहीं हो सकी।",
+            passwordTooShort:"नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।",
+            passwordsMismatch:"दोनों पासवर्ड मेल नहीं खाते।",
+            passwordSame:"नया पासवर्ड अलग होना चाहिए।",
+            passwordFailed:"पासवर्ड नहीं बदला जा सका।"
+        }
+    };
+
+    function t(key) {
+        const lang = localStorage.getItem("buildai-language") || "en";
+        return (translations[lang] || translations.en)[key] ||
+               translations.en[key] || key;
+    }
+
+    function applyLanguage(language) {
+        const dictionary = translations[language] || translations.en;
+
+        document.querySelectorAll("[data-i18n]").forEach(element => {
+            const key = element.dataset.i18n;
+            if (dictionary[key]) element.textContent = dictionary[key];
+        });
+
+        document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+            const key = element.dataset.i18nPlaceholder;
+            if (dictionary[key]) element.placeholder = dictionary[key];
+        });
+
+        document.documentElement.lang = language;
+        localStorage.setItem("buildai-language", language);
+
+        const photoButton = $("changePhotoBtn");
+        if (photoButton && !photoButton.disabled) {
+            photoButton.innerHTML =
+                '<i class="fas fa-camera"></i> <span data-i18n="changePhoto">' +
+                t("changePhoto") + '</span>';
+        }
+
+        // Shared event for the other BuildAI pages.
+        window.dispatchEvent(new CustomEvent("buildai-language-changed", {
+            detail: { language: language }
+        }));
+    }
+
+    const languageSelect = $("languageSelect");
+    const savedLanguage = localStorage.getItem("buildai-language") || "en";
+    languageSelect.value = savedLanguage;
+    applyLanguage(savedLanguage);
+
+    languageSelect.addEventListener("change", function () {
+        applyLanguage(this.value);
+    });
+
+    function showMessage(element, message, success) {
+        element.textContent = message;
+        element.className = "form-message " + (success ? "success" : "error");
+    }
+
+    // Profile photo upload
+    const photoButton = $("changePhotoBtn");
+    const photoInput = $("profilePhotoInput");
+    const photoImage = $("profilePhoto");
+    const profileMessage = $("profileMessage");
+
+    photoButton.addEventListener("click", () => photoInput.click());
+
+    photoInput.addEventListener("change", async function () {
+        const file = this.files && this.files[0];
+        if (!file) return;
+
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            showMessage(profileMessage, t("invalidPhoto"), false);
+            this.value = "";
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            showMessage(profileMessage, t("photoTooLarge"), false);
+            this.value = "";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("photo", file);
+
+        photoButton.disabled = true;
+        photoButton.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> ' + t("uploadPhoto");
+
+        try {
+            const response = await fetch("{{ url_for('upload_profile_photo') }}", {
+                method: "POST",
+                credentials: "same-origin",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || t("photoUploadFailed"));
+            }
+
+            const photoUrl = result.photo_url + "?v=" + Date.now();
+            photoImage.src = photoUrl;
+
+            const headerPhoto = document.querySelector(".header-profile-photo");
+            const headerPlaceholder = document.querySelector(".header-profile-placeholder");
+
+            if (headerPhoto) {
+                headerPhoto.src = photoUrl;
+            } else if (headerPlaceholder) {
+                const newPhoto = document.createElement("img");
+                newPhoto.className = "header-profile-photo";
+                newPhoto.src = photoUrl;
+                newPhoto.alt = "Profile";
+                newPhoto.style.cssText =
+                    "width:40px;height:40px;border-radius:50%;object-fit:cover";
+                headerPlaceholder.replaceWith(newPhoto);
+            }
+
+            showMessage(profileMessage, result.message || "Photo updated successfully.", true);
+        } catch (error) {
+            showMessage(profileMessage, error.message, false);
+        } finally {
+            photoButton.disabled = false;
+            photoButton.innerHTML =
+                '<i class="fas fa-camera"></i> <span data-i18n="changePhoto">' +
+                t("changePhoto") + '</span>';
+            photoInput.value = "";
+        }
+    });
+
+    // Save profile name and phone
+    $("saveProfileBtn").addEventListener("click", async function () {
+        const name = $("fullName").value.trim();
+        const phone = $("phone").value.trim();
+
+        if (!name) {
+            showMessage(profileMessage, t("enterName"), false);
+            return;
+        }
+
+        this.disabled = true;
+
+        try {
+            const response = await fetch("{{ url_for('update_profile') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ name, phone })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || t("profileSaveFailed"));
+            }
+
+            showMessage(profileMessage, result.message || "Profile saved successfully.", true);
+        } catch (error) {
+            showMessage(profileMessage, error.message, false);
+        } finally {
+            this.disabled = false;
+        }
+    });
+
+    // Show / hide passwords
+    document.querySelectorAll(".toggle-password").forEach(button => {
+        button.addEventListener("click", function () {
+            const input = $(this.dataset.target);
+            const icon = this.querySelector("i");
+            if (!input || !icon) return;
+
+            const show = input.type === "password";
+            input.type = show ? "text" : "password";
+            icon.classList.toggle("fa-eye", !show);
+            icon.classList.toggle("fa-eye-slash", show);
+        });
+    });
+
+    // Change password
+    const passwordForm = $("passwordForm");
+    const passwordMessage = $("passwordMessage");
+    const passwordButton = $("changePasswordBtn");
+
+    passwordForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const currentPassword = $("currentPassword").value;
+        const newPassword = $("newPassword").value;
+        const confirmPassword = $("confirmPassword").value;
+
+        if (newPassword.length < 6) {
+            showMessage(passwordMessage, t("passwordTooShort"), false);
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showMessage(passwordMessage, t("passwordsMismatch"), false);
+            return;
+        }
+
+        if (currentPassword === newPassword) {
+            showMessage(passwordMessage, t("passwordSame"), false);
+            return;
+        }
+
+        passwordButton.disabled = true;
+
+        try {
+            const response = await fetch("{{ url_for('change_password') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword,
+                    confirm_password: confirmPassword
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || t("passwordFailed"));
+            }
+
+            showMessage(passwordMessage, result.message || "Password changed successfully.", true);
+            passwordForm.reset();
+        } catch (error) {
+            showMessage(passwordMessage, error.message, false);
+        } finally {
+            passwordButton.disabled = false;
+        }
+    });
+
+    // Dark mode preference
+    const darkModeToggle = $("darkModeToggle");
+
+    function applyDarkMode(enabled) {
+        document.body.classList.toggle("dark-mode", enabled);
+        localStorage.setItem("buildai-dark-mode", String(enabled));
+    }
+
+    darkModeToggle.checked = localStorage.getItem("buildai-dark-mode") === "true";
+    applyDarkMode(darkModeToggle.checked);
+
+    darkModeToggle.addEventListener("change", function () {
+        applyDarkMode(this.checked);
+    });
+
+    // Notification and email preferences
+    ["notificationToggle", "emailUpdatesToggle"].forEach(id => {
+        const control = $(id);
+        control.checked = localStorage.getItem("buildai-" + id) !== "false";
+
+        control.addEventListener("change", function () {
+            localStorage.setItem("buildai-" + id, String(this.checked));
+        });
+    });
+});
+</script>
+<script src="{{ url_for('static', filename='js/language.js') }}"></script>
+</body>
+</html>

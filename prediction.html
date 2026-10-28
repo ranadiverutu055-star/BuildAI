@@ -1,0 +1,1201 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction - BuildAI</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+    <script src="{{ url_for('static', filename='js/language.js') }}" defer></script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f6fb;
+            color: #14233f;
+            font-family: Arial, sans-serif;
+            transition: background .2s ease, color .2s ease;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 255px;
+            height: 100vh;
+            background: linear-gradient(180deg,#0c1932,#14294a);
+            padding: 28px 15px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .brand {
+            color: white;
+            font-size: 29px;
+            font-weight: 800;
+            margin-bottom: 45px;
+            white-space: nowrap;
+        }
+
+        .brand i { color: #ffbf26; margin-right: 10px; }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #c7d2e5;
+            text-decoration: none;
+            padding: 16px 14px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            color: white;
+            background: #2864ed;
+        }
+
+        .sidebar nav a i { width: 20px; text-align: center; }
+
+        .main-content {
+            margin-left: 255px;
+            padding: 28px 38px 50px;
+        }
+
+        .topbar {
+            background: white;
+            padding: 18px 24px;
+            min-height: 95px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 32px;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px #14233f0a;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb-text {
+            color: #7b8ba6;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .breadcrumb-text span { color: #2864ed; font-weight: 700; }
+
+        .topbar h2 { font-size: 25px; font-weight: 800; margin: 0; }
+
+        .topbar-controls {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .language-select {
+            min-height: 40px;
+            max-width: 145px;
+            border: 1px solid #dce5f2;
+            border-radius: 9px;
+            padding: 7px 10px;
+            background: white;
+            color: #14233f;
+        }
+
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 11px;
+            border: 1px solid #dce5f2;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .theme-toggle input { cursor: pointer; }
+
+        .profile-photo-only {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e7edf7;
+        }
+
+        .profile-icon-only { font-size: 44px; color: #2864ed; }
+
+        .page-heading { margin-bottom: 28px; }
+
+        .eyebrow {
+            color: #2864ed;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .page-heading h1 { font-size: 35px; font-weight: 800; margin-bottom: 12px; }
+
+        .page-heading p,
+        .section-description { color: #7b8ba6; }
+
+        .form-card,
+        .result-card {
+            background: white;
+            border: 1px solid #e4eaf4;
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: 0 10px 35px #1b345b0d;
+            margin-bottom: 28px;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .section-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: #edf3ff;
+            color: #2864ed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .section-heading h3 { font-size: 22px; font-weight: 800; margin: 0; }
+
+        .section-description { margin-bottom: 28px; }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #243653;
+            margin-bottom: 9px;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 50px;
+            border: 1px solid #dce5f2;
+            border-radius: 10px;
+            padding: 11px 14px;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #2864ed;
+            box-shadow: 0 0 0 3px #2864ed1a;
+        }
+
+        .field-row { margin-bottom: 20px; }
+
+        .btn-predict {
+            width: 100%;
+            min-height: 53px;
+            border: 0;
+            border-radius: 10px;
+            background: #2864ed;
+            color: white;
+            font-weight: 700;
+        }
+
+        .btn-predict:hover { background: #174bc7; color: white; }
+        .btn-predict:disabled { opacity: .7; }
+
+        .result-card { display: none; scroll-margin-top: 20px; }
+
+        .cost-highlight {
+            background: #edf3ff;
+            padding: 24px;
+            border-radius: 14px;
+            margin: 22px 0;
+        }
+
+        .cost-highlight p { color: #657794; margin-bottom: 8px; }
+
+        .cost-highlight h2 {
+            color: #2864ed;
+            font-size: 32px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .result-detail {
+            border: 1px solid #e4eaf4;
+            border-radius: 11px;
+            padding: 15px;
+            height: 100%;
+            overflow-wrap: anywhere;
+        }
+
+        .result-detail span {
+            display: block;
+            color: #7b8ba6;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .breakdown-row span { color: #657794; }
+        .breakdown-row strong { text-align: right; overflow-wrap: anywhere; }
+
+        .recommendation-box {
+            padding: 17px;
+            border-radius: 12px;
+            background: #f0f6ff;
+            margin-top: 22px;
+            line-height: 1.6;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .result-actions .btn { border-radius: 9px; font-weight: 600; }
+
+        #predictionMessage,
+        #savePredictionMessage { margin-top: 14px; }
+
+        /* DARK MODE */
+        html.dark-mode body,
+        body.dark-mode {
+            background: #0b1220 !important;
+            color: #e8eef8 !important;
+        }
+
+        html.dark-mode .main-content,
+        body.dark-mode .main-content {
+            background: #0b1220;
+            color: #e8eef8;
+        }
+
+        html.dark-mode .topbar,
+        html.dark-mode .form-card,
+        html.dark-mode .result-card,
+        body.dark-mode .topbar,
+        body.dark-mode .form-card,
+        body.dark-mode .result-card {
+            background: #121e30 !important;
+            color: #e8eef8 !important;
+            border-color: #293a52 !important;
+            box-shadow: none;
+        }
+
+        html.dark-mode .topbar h2,
+        html.dark-mode .section-heading h3,
+        html.dark-mode .form-label,
+        html.dark-mode .result-detail strong,
+        html.dark-mode .fw-bold,
+        body.dark-mode .topbar h2,
+        body.dark-mode .section-heading h3,
+        body.dark-mode .form-label,
+        body.dark-mode .result-detail strong,
+        body.dark-mode .fw-bold {
+            color: #e8eef8 !important;
+        }
+
+        html.dark-mode .page-heading p,
+        html.dark-mode .section-description,
+        html.dark-mode .breadcrumb-text,
+        html.dark-mode .result-detail span,
+        html.dark-mode .breakdown-row span,
+        html.dark-mode .cost-highlight p,
+        body.dark-mode .page-heading p,
+        body.dark-mode .section-description,
+        body.dark-mode .breadcrumb-text,
+        body.dark-mode .result-detail span,
+        body.dark-mode .breakdown-row span,
+        body.dark-mode .cost-highlight p {
+            color: #aabbd2 !important;
+        }
+
+        html.dark-mode .form-control,
+        html.dark-mode .form-select,
+        html.dark-mode .language-select,
+        body.dark-mode .form-control,
+        body.dark-mode .form-select,
+        body.dark-mode .language-select {
+            background-color: #0b1525 !important;
+            color: #e8eef8 !important;
+            border-color: #35465f !important;
+        }
+
+        html.dark-mode .form-control::placeholder,
+        body.dark-mode .form-control::placeholder {
+            color: #91a2ba !important;
+        }
+
+        html.dark-mode .section-icon,
+        body.dark-mode .section-icon {
+            background: #1c3150 !important;
+            color: #78a5ff !important;
+        }
+
+        html.dark-mode .cost-highlight,
+        body.dark-mode .cost-highlight {
+            background: #172a48 !important;
+        }
+
+        html.dark-mode .recommendation-box,
+        body.dark-mode .recommendation-box {
+            background: #172a40 !important;
+            color: #dce8f8 !important;
+        }
+
+        html.dark-mode .result-detail,
+        body.dark-mode .result-detail {
+            border-color: #35465f !important;
+        }
+
+        html.dark-mode .breakdown-row,
+        body.dark-mode .breakdown-row {
+            border-color: #293a52 !important;
+        }
+
+        html.dark-mode .theme-toggle,
+        body.dark-mode .theme-toggle {
+            color: #e8eef8;
+            border-color: #35465f;
+        }
+
+        @media(max-width:900px) {
+            .sidebar { width: 210px; }
+            .main-content { margin-left: 210px; padding: 20px; }
+            .form-card, .result-card { padding: 23px; }
+            .page-heading h1 { font-size: 30px; }
+        }
+
+        @media(max-width:650px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 15px;
+            }
+
+            .brand { margin-bottom: 15px; font-size: 25px; }
+
+            .sidebar nav a {
+                display: inline-flex;
+                padding: 9px;
+                margin: 3px;
+                font-size: 12px;
+            }
+
+            .main-content { margin-left: 0; padding: 15px; }
+            .topbar { padding: 16px; margin-bottom: 24px; }
+            .topbar h2 { font-size: 19px; }
+            .page-heading h1 { font-size: 27px; }
+            .form-card, .result-card { padding: 18px; }
+            .topbar-controls { justify-content: flex-start; }
+        }
+
+        @media print {
+            .sidebar,
+            .topbar,
+            .page-heading,
+            .form-card,
+            .result-actions,
+            #predictionMessage,
+            #savePredictionMessage { display: none !important; }
+
+            .main-content { margin: 0; padding: 0; }
+
+            .result-card {
+                display: block !important;
+                box-shadow: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<aside class="sidebar">
+    <div class="brand"><i class="fa-solid fa-city"></i>BuildAI</div>
+
+    <nav>
+        <a href="{{ url_for('dashboard') }}">
+            <i class="fa-solid fa-house"></i><span data-i18n="dashboard">Dashboard</span>
+        </a>
+        <a href="{{ url_for('prediction') }}" class="active">
+            <i class="fa-solid fa-calculator"></i><span data-i18n="prediction">Prediction</span>
+        </a>
+        <a href="{{ url_for('reports') }}">
+            <i class="fa-solid fa-file-pdf"></i><span data-i18n="reports">Reports</span>
+        </a>
+        <a href="{{ url_for('history') }}">
+            <i class="fa-solid fa-clock-rotate-left"></i><span data-i18n="history">History</span>
+        </a>
+        <a href="{{ url_for('settings') }}">
+            <i class="fa-solid fa-gear"></i><span data-i18n="settings">Settings</span>
+        </a>
+        <a href="{{ url_for('logout') }}" style="margin-top:25px">
+            <i class="fa-solid fa-right-from-bracket"></i><span data-i18n="logout">Logout</span>
+        </a>
+    </nav>
+</aside>
+
+<main class="main-content">
+    <header class="topbar">
+        <div>
+            <div class="breadcrumb-text">
+                <span data-i18n="workspace">Workspace</span> /
+                <span data-i18n="prediction">Prediction</span>
+            </div>
+            <h2 data-i18n="pageTitle">Construction Cost Prediction</h2>
+        </div>
+
+        <div class="topbar-controls">
+            <select class="language-select" data-language-select aria-label="Select language">
+                <option value="en">English</option>
+                <option value="mr">मराठी</option>
+                <option value="hi">हिन्दी</option>
+            </select>
+
+            <label class="theme-toggle">
+                <input type="checkbox" id="darkModeToggle" data-dark-mode-toggle>
+                <i class="fa-solid fa-moon"></i>
+                <span data-theme-label data-i18n="darkMode">Dark Mode</span>
+            </label>
+
+            {% if user and user['profile_picture'] %}
+                <img src="{{ url_for('static', filename=user['profile_picture']) }}" alt="Profile" class="profile-photo-only">
+            {% else %}
+                <i class="fa-solid fa-user-circle profile-icon-only"></i>
+            {% endif %}
+        </div>
+    </header>
+
+    <section class="page-heading">
+        <div class="eyebrow">
+            <i class="fa-solid fa-calculator"></i>
+            <span data-i18n="projectEstimate">PROJECT ESTIMATE</span>
+        </div>
+        <h1 data-i18n="createEstimate">Create a Construction Estimate</h1>
+        <p data-i18n="estimateIntro">Enter your project details to estimate the construction cost.</p>
+    </section>
+
+    <section class="form-card">
+        <div class="section-heading">
+            <div class="section-icon"><i class="fa-solid fa-building"></i></div>
+            <h3 data-i18n="projectDetails">Project Details</h3>
+        </div>
+
+        <p class="section-description" data-i18n="projectDetailsIntro">Provide the project details below.</p>
+
+        <form id="predictionForm">
+            <div class="row">
+                <div class="col-md-6 field-row">
+                    <label for="projectName" class="form-label" data-i18n="projectName">Project Name</label>
+                    <input class="form-control" id="projectName" name="project_name"
+                           data-i18n-placeholder="enterProjectName"
+                           placeholder="Enter project name" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="location" class="form-label" data-i18n="location">Location</label>
+                    <select class="form-select" id="location" name="location" required>
+                        <option value="" data-i18n="selectLocation">Select location</option>
+                        {% for city in ['Pune','Mumbai','Nagpur','Nashik','Thane','Solapur','Kolhapur','Satara','Sangli','Latur','Aurangabad'] %}
+                        <option value="{{ city }}">{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="area" class="form-label" data-i18n="area">Area (Sq. Ft.)</label>
+                    <input type="number" class="form-control" id="area" name="area"
+                           min="1" step="any" data-i18n-placeholder="areaExample"
+                           placeholder="Example: 1000" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="floors" class="form-label" data-i18n="floors">Number of Floors</label>
+                    <input type="number" class="form-control" id="floors" name="floors"
+                           min="1" step="1" data-i18n-placeholder="floorsExample"
+                           placeholder="Example: 2" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="cement" class="form-label" data-i18n="cementPrice">Cement Price (₹ / Bag)</label>
+                    <input type="number" class="form-control" id="cement" name="cement_price"
+                           min="0.01" step="any" data-i18n-placeholder="cementExample"
+                           placeholder="Example: 390" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="steel" class="form-label" data-i18n="steelPrice">Steel Price (₹ / Kg)</label>
+                    <input type="number" class="form-control" id="steel" name="steel_price"
+                           min="0.01" step="any" data-i18n-placeholder="steelExample"
+                           placeholder="Example: 72" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="sand" class="form-label" data-i18n="sandPrice">Sand Price (₹ / CFT)</label>
+                    <input type="number" class="form-control" id="sand" name="sand_price"
+                           min="0.01" step="any" data-i18n-placeholder="sandExample"
+                           placeholder="Enter sand price" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="brick" class="form-label" data-i18n="brickPrice">Brick Price (₹ / Piece)</label>
+                    <input type="number" class="form-control" id="brick" name="brick_price"
+                           min="0.01" step="any" data-i18n-placeholder="brickExample"
+                           placeholder="Enter brick price" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="aggregate" class="form-label" data-i18n="aggregatePrice">Aggregate Price (₹ / Unit)</label>
+                    <input type="number" class="form-control" id="aggregate" name="aggregate_price"
+                           min="0.01" step="any" data-i18n-placeholder="aggregateExample"
+                           placeholder="Enter aggregate price" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="labour" class="form-label" data-i18n="labourPrice">Labour Cost (₹ / Day)</label>
+                    <input type="number" class="form-control" id="labour" name="labour_cost"
+                           min="0.01" step="any" data-i18n-placeholder="labourExample"
+                           placeholder="Enter labour cost per day" required>
+                </div>
+
+                <div class="col-md-6 field-row">
+                    <label for="materialQuality" class="form-label" data-i18n="materialQuality">Material Quality</label>
+                    <select class="form-select" id="materialQuality" name="material_quality" required>
+                        <option value="" data-i18n="selectQuality">Select quality</option>
+                        <option value="Standard" data-i18n="standard">Standard</option>
+                        <option value="Premium" data-i18n="premium">Premium</option>
+                        <option value="Luxury" data-i18n="luxury">Luxury</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="predictionMessage" role="alert"></div>
+
+            <button type="submit" id="predictButton" class="btn-predict">
+                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>
+                <span data-i18n="predictCost">Predict Construction Cost</span>
+            </button>
+        </form>
+    </section>
+
+    <section id="resultCard" class="result-card">
+        <div class="section-heading">
+            <div class="section-icon"><i class="fa-solid fa-chart-pie"></i></div>
+            <h3 data-i18n="predictionResult">Prediction Result</h3>
+        </div>
+
+        <div class="cost-highlight">
+            <p data-i18n="estimatedConstructionCost">Estimated Construction Cost</p>
+            <h2 id="predictedCost">₹ 0</h2>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="result-detail">
+                    <span data-i18n="projectName">Project Name</span>
+                    <strong id="showProjectName">-</strong>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="result-detail">
+                    <span data-i18n="location">Location</span>
+                    <strong id="showLocation">-</strong>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="result-detail">
+                    <span data-i18n="area">Area (Sq. Ft.)</span>
+                    <strong id="showArea">-</strong>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="result-detail">
+                    <span data-i18n="floors">Floors</span>
+                    <strong id="showFloor">-</strong>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="result-detail">
+                    <span data-i18n="materialQuality">Material Quality</span>
+                    <strong id="showQuality">-</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h4 class="fw-bold mb-3" data-i18n="illustrativeDistribution">Illustrative Cost Distribution</h4>
+                <p class="text-secondary small" data-i18n="illustrativeNotice">
+                    The following percentages are examples, not actual material consumption calculations.
+                </p>
+
+                <div class="breakdown-row"><span data-i18n="cementPercent">Cement (25%)</span><strong id="cementCost">₹ 0</strong></div>
+                <div class="breakdown-row"><span data-i18n="steelPercent">Steel (35%)</span><strong id="steelCost">₹ 0</strong></div>
+                <div class="breakdown-row"><span data-i18n="sandPercent">Sand (12%)</span><strong id="sandCost">₹ 0</strong></div>
+                <div class="breakdown-row"><span data-i18n="bricksPercent">Bricks (8%)</span><strong id="brickCost">₹ 0</strong></div>
+                <div class="breakdown-row"><span data-i18n="labourPercent">Labour (20%)</span><strong id="labourCost">₹ 0</strong></div>
+            </div>
+
+            <div class="col-lg-6">
+                <h4 class="fw-bold mb-3" data-i18n="costDistribution">Cost Distribution</h4>
+                <div style="max-width:400px;margin:auto">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="recommendationBox" class="recommendation-box"></div>
+        <div id="savePredictionMessage" role="status"></div>
+
+        <div class="result-actions">
+            <button type="button" id="printPredictionBtn" class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fa-solid fa-print me-2"></i><span data-i18n="printResult">Print Result</span>
+            </button>
+            <a href="{{ url_for('history') }}" class="btn btn-outline-primary">
+                <i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="viewHistory">View History</span>
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary" data-i18n="backDashboard">
+                Back to Dashboard
+            </a>
+        </div>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+(function () {
+    "use strict";
+
+    const THEME_KEY = "buildai-dark-mode";
+    const LANG_KEY = "buildai-language";
+
+    const pageTranslations = {
+        en: {
+            pageTitle: "Construction Cost Prediction",
+            projectEstimate: "PROJECT ESTIMATE",
+            createEstimate: "Create a Construction Estimate",
+            estimateIntro: "Enter your project details to estimate the construction cost.",
+            projectDetails: "Project Details",
+            projectDetailsIntro: "Provide the project details below.",
+            projectName: "Project Name",
+            enterProjectName: "Enter project name",
+            location: "Location",
+            selectLocation: "Select location",
+            area: "Area (Sq. Ft.)",
+            areaExample: "Example: 1000",
+            floors: "Number of Floors",
+            floorsExample: "Example: 2",
+            cementPrice: "Cement Price (₹ / Bag)",
+            cementExample: "Example: 390",
+            steelPrice: "Steel Price (₹ / Kg)",
+            steelExample: "Example: 72",
+            sandPrice: "Sand Price (₹ / CFT)",
+            sandExample: "Enter sand price",
+            brickPrice: "Brick Price (₹ / Piece)",
+            brickExample: "Enter brick price",
+            aggregatePrice: "Aggregate Price (₹ / Unit)",
+            aggregateExample: "Enter aggregate price",
+            labourPrice: "Labour Cost (₹ / Day)",
+            labourExample: "Enter labour cost per day",
+            materialQuality: "Material Quality",
+            selectQuality: "Select quality",
+            standard: "Standard",
+            premium: "Premium",
+            luxury: "Luxury",
+            predictCost: "Predict Construction Cost",
+            calculating: "Calculating...",
+            predictionResult: "Prediction Result",
+            estimatedConstructionCost: "Estimated Construction Cost",
+            illustrativeDistribution: "Illustrative Cost Distribution",
+            illustrativeNotice: "The following percentages are examples, not actual material consumption calculations.",
+            cementPercent: "Cement (25%)",
+            steelPercent: "Steel (35%)",
+            sandPercent: "Sand (12%)",
+            bricksPercent: "Bricks (8%)",
+            labourPercent: "Labour (20%)",
+            costDistribution: "Cost Distribution",
+            printResult: "Print Result",
+            viewHistory: "View History",
+            backDashboard: "Back to Dashboard",
+            sessionExpired: "Session expired. Please log in again.",
+            predictionFailed: "Prediction failed. Check the Flask terminal for the error.",
+            invalidCost: "The server response does not contain a valid predicted_cost value.",
+            serverNotSuccessful: "The server did not confirm a successful prediction.",
+            predictionSuccess: "Prediction calculated successfully!",
+            predictionSaved: "Prediction saved successfully. You can view it in History.",
+            predictionNotSaved: "Cost predicted, but the server did not confirm that it was saved. Please check History.",
+            estimateDisclaimer: "This is an ML-based estimate, not a contractor quotation. Material-wise values are illustrative only and are not based on measured material quantities. Verify the final budget with a qualified contractor.",
+            darkMode: "Dark Mode",
+            darkModeOn: "Dark Mode On",
+            darkModeOff: "Dark Mode Off"
+        },
+        mr: {
+            pageTitle: "बांधकाम खर्चाचा अंदाज",
+            projectEstimate: "प्रकल्पाचा अंदाज",
+            createEstimate: "बांधकाम खर्चाचा अंदाज तयार करा",
+            estimateIntro: "बांधकाम खर्चाचा अंदाज घेण्यासाठी प्रकल्पाची माहिती भरा.",
+            projectDetails: "प्रकल्पाची माहिती",
+            projectDetailsIntro: "खाली प्रकल्पाची माहिती भरा.",
+            projectName: "प्रकल्पाचे नाव",
+            enterProjectName: "प्रकल्पाचे नाव टाका",
+            location: "ठिकाण",
+            selectLocation: "ठिकाण निवडा",
+            area: "क्षेत्रफळ (चौ. फूट)",
+            areaExample: "उदाहरण: 1000",
+            floors: "मजल्यांची संख्या",
+            floorsExample: "उदाहरण: 2",
+            cementPrice: "सिमेंटची किंमत (₹ / पोते)",
+            cementExample: "उदाहरण: 390",
+            steelPrice: "स्टीलची किंमत (₹ / किलो)",
+            steelExample: "उदाहरण: 72",
+            sandPrice: "वाळूची किंमत (₹ / घनफूट)",
+            sandExample: "वाळूची किंमत टाका",
+            brickPrice: "विटांची किंमत (₹ / नग)",
+            brickExample: "विटांची किंमत टाका",
+            aggregatePrice: "खडीची किंमत (₹ / युनिट)",
+            aggregateExample: "खडीची किंमत टाका",
+            labourPrice: "मजुरीचा खर्च (₹ / दिवस)",
+            labourExample: "प्रतिदिन मजुरीचा खर्च टाका",
+            materialQuality: "साहित्याचा दर्जा",
+            selectQuality: "दर्जा निवडा",
+            standard: "सामान्य",
+            premium: "उत्तम",
+            luxury: "उच्च दर्जाचा",
+            predictCost: "बांधकाम खर्चाचा अंदाज काढा",
+            calculating: "गणना सुरू आहे...",
+            predictionResult: "अंदाजाचा निकाल",
+            estimatedConstructionCost: "अंदाजित बांधकाम खर्च",
+            illustrativeDistribution: "खर्चाचे उदाहरणार्थ विभाजन",
+            illustrativeNotice: "खालील टक्केवारी उदाहरणासाठी आहे; ती प्रत्यक्ष साहित्य वापराची गणना नाही.",
+            cementPercent: "सिमेंट (25%)",
+            steelPercent: "स्टील (35%)",
+            sandPercent: "वाळू (12%)",
+            bricksPercent: "विटा (8%)",
+            labourPercent: "मजुरी (20%)",
+            costDistribution: "खर्चाचे विभाजन",
+            printResult: "निकाल प्रिंट करा",
+            viewHistory: "इतिहास पहा",
+            backDashboard: "डॅशबोर्डवर परत जा",
+            sessionExpired: "सेशन संपले आहे. कृपया पुन्हा लॉगिन करा.",
+            predictionFailed: "अंदाज काढता आला नाही. Flask टर्मिनलमधील त्रुटी तपासा.",
+            invalidCost: "सर्व्हरकडून वैध predicted_cost मिळाला नाही.",
+            serverNotSuccessful: "सर्व्हरने अंदाज यशस्वी झाल्याची पुष्टी केलेली नाही.",
+            predictionSuccess: "खर्चाचा अंदाज यशस्वीपणे काढला!",
+            predictionSaved: "अंदाज जतन झाला. तो इतिहासामध्ये पाहू शकता.",
+            predictionNotSaved: "खर्चाचा अंदाज काढला, पण तो जतन झाल्याची पुष्टी नाही. इतिहास तपासा.",
+            estimateDisclaimer: "हा मशीन लर्निंगवर आधारित अंदाज आहे; कंत्राटदाराचे कोटेशन नाही. साहित्यनिहाय रक्कम ही फक्त उदाहरणासाठी आहे आणि प्रत्यक्ष मोजलेल्या साहित्याच्या प्रमाणावर आधारित नाही. अंतिम बजेट तज्ज्ञ कंत्राटदाराकडून तपासून घ्या.",
+            darkMode: "डार्क मोड",
+            darkModeOn: "डार्क मोड सुरू",
+            darkModeOff: "डार्क मोड बंद"
+        },
+        hi: {
+            pageTitle: "निर्माण लागत का अनुमान",
+            projectEstimate: "परियोजना अनुमान",
+            createEstimate: "निर्माण लागत का अनुमान बनाएँ",
+            estimateIntro: "निर्माण लागत का अनुमान लगाने के लिए परियोजना का विवरण भरें।",
+            projectDetails: "परियोजना का विवरण",
+            projectDetailsIntro: "नीचे परियोजना का विवरण भरें।",
+            projectName: "परियोजना का नाम",
+            enterProjectName: "परियोजना का नाम दर्ज करें",
+            location: "स्थान",
+            selectLocation: "स्थान चुनें",
+            area: "क्षेत्रफल (वर्ग फुट)",
+            areaExample: "उदाहरण: 1000",
+            floors: "मंजिलों की संख्या",
+            floorsExample: "उदाहरण: 2",
+            cementPrice: "सीमेंट की कीमत (₹ / बोरी)",
+            cementExample: "उदाहरण: 390",
+            steelPrice: "स्टील की कीमत (₹ / किलो)",
+            steelExample: "उदाहरण: 72",
+            sandPrice: "रेत की कीमत (₹ / घन फुट)",
+            sandExample: "रेत की कीमत दर्ज करें",
+            brickPrice: "ईंट की कीमत (₹ / नग)",
+            brickExample: "ईंट की कीमत दर्ज करें",
+            aggregatePrice: "गिट्टी की कीमत (₹ / यूनिट)",
+            aggregateExample: "गिट्टी की कीमत दर्ज करें",
+            labourPrice: "मजदूरी लागत (₹ / दिन)",
+            labourExample: "प्रतिदिन मजदूरी दर्ज करें",
+            materialQuality: "सामग्री की गुणवत्ता",
+            selectQuality: "गुणवत्ता चुनें",
+            standard: "सामान्य",
+            premium: "प्रीमियम",
+            luxury: "लक्ज़री",
+            predictCost: "निर्माण लागत का अनुमान लगाएँ",
+            calculating: "गणना हो रही है...",
+            predictionResult: "अनुमान का परिणाम",
+            estimatedConstructionCost: "अनुमानित निर्माण लागत",
+            illustrativeDistribution: "लागत का उदाहरणात्मक विभाजन",
+            illustrativeNotice: "नीचे दिए गए प्रतिशत केवल उदाहरण हैं, वास्तविक सामग्री खपत की गणना नहीं।",
+            cementPercent: "सीमेंट (25%)",
+            steelPercent: "स्टील (35%)",
+            sandPercent: "रेत (12%)",
+            bricksPercent: "ईंटें (8%)",
+            labourPercent: "मजदूरी (20%)",
+            costDistribution: "लागत का विभाजन",
+            printResult: "परिणाम प्रिंट करें",
+            viewHistory: "इतिहास देखें",
+            backDashboard: "डैशबोर्ड पर वापस जाएँ",
+            sessionExpired: "सेशन समाप्त हो गया। कृपया फिर से लॉगिन करें।",
+            predictionFailed: "अनुमान विफल हुआ। Flask टर्मिनल में त्रुटि देखें।",
+            invalidCost: "सर्वर से वैध predicted_cost प्राप्त नहीं हुआ।",
+            serverNotSuccessful: "सर्वर ने सफल अनुमान की पुष्टि नहीं की।",
+            predictionSuccess: "लागत का अनुमान सफलतापूर्वक निकाला गया!",
+            predictionSaved: "अनुमान सहेजा गया। इसे इतिहास में देख सकते हैं।",
+            predictionNotSaved: "लागत का अनुमान निकला, लेकिन सहेजे जाने की पुष्टि नहीं हुई। इतिहास जाँचें।",
+            estimateDisclaimer: "यह मशीन लर्निंग पर आधारित अनुमान है, ठेकेदार का कोटेशन नहीं। सामग्री के अनुसार राशि केवल उदाहरण है और वास्तविक सामग्री मात्रा पर आधारित नहीं है। अंतिम बजट योग्य ठेकेदार से जाँचें।",
+            darkMode: "डार्क मोड",
+            darkModeOn: "डार्क मोड चालू",
+            darkModeOff: "डार्क मोड बंद"
+        }
+    };
+
+    function currentLanguage() {
+        try {
+            const saved = localStorage.getItem(LANG_KEY);
+            return pageTranslations[saved] ? saved : "en";
+        } catch (error) {
+            return "en";
+        }
+    }
+
+    function t(key) {
+        const lang = currentLanguage();
+        return pageTranslations[lang][key] ||
+               pageTranslations.en[key] ||
+               key;
+    }
+
+    function applyPageTranslations() {
+        const lang = currentLanguage();
+        const words = pageTranslations[lang];
+
+        document.documentElement.lang = lang;
+
+        document.querySelectorAll("[data-i18n]").forEach(function (element) {
+            const key = element.getAttribute("data-i18n");
+            if (Object.prototype.hasOwnProperty.call(words, key)) {
+                element.textContent = words[key];
+            }
+        });
+
+        document.querySelectorAll("[data-i18n-placeholder]").forEach(function (element) {
+            const key = element.getAttribute("data-i18n-placeholder");
+            if (Object.prototype.hasOwnProperty.call(words, key)) {
+                element.placeholder = words[key];
+            }
+        });
+
+        document.querySelectorAll("[data-language-select]").forEach(function (select) {
+            select.value = lang;
+        });
+
+        const darkToggle = document.getElementById("darkModeToggle");
+        const darkEnabled = readDarkMode();
+
+        if (darkToggle) {
+            darkToggle.checked = darkEnabled;
+        }
+
+        const themeLabel = document.querySelector("[data-theme-label]");
+        if (themeLabel) {
+            themeLabel.textContent = darkEnabled ? t("darkModeOn") : t("darkModeOff");
+        }
+
+        document.title = lang === "mr"
+            ? "अंदाज - BuildAI"
+            : lang === "hi"
+                ? "अनुमान - BuildAI"
+                : "Prediction - BuildAI";
+
+        if (costChart) {
+            costChart.data.labels = chartLabels();
+            costChart.update();
+        }
+    }
+
+    function readDarkMode() {
+        try {
+            return localStorage.getItem(THEME_KEY) === "true";
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function applyTheme(enabled) {
+        document.documentElement.classList.toggle("dark-mode", Boolean(enabled));
+        document.body.classList.toggle("dark-mode", Boolean(enabled));
+
+        const toggle = document.getElementById("darkModeToggle");
+        if (toggle) toggle.checked = Boolean(enabled);
+
+        const label = document.querySelector("[data-theme-label]");
+        if (label) {
+            label.textContent = enabled ? t("darkModeOn") : t("darkModeOff");
+        }
+    }
+
+    function setTheme(enabled) {
+        try {
+            localStorage.setItem(THEME_KEY, String(Boolean(enabled)));
+        } catch (error) {
+            console.warn("BuildAI: Could not save theme preference.");
+        }
+        applyTheme(Boolean(enabled));
+    }
+
+    function chartLabels() {
+        const lang = currentLanguage();
+
+        if (lang === "mr") {
+            return ["सिमेंट", "स्टील", "वाळू", "विटा", "मजुरी"];
+        }
+
+        if (lang === "hi") {
+            return ["सीमेंट", "स्टील", "रेत", "ईंटें", "मजदूरी"];
+        }
+
+        return ["Cement", "Steel", "Sand", "Bricks", "Labour"];
+    }
+
+    let costChart = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("predictionForm");
+        const button = document.getElementById("predictButton");
+        const resultCard = document.getElementById("resultCard");
+        const message = document.getElementById("predictionMessage");
+        const saveMessage = document.getElementById("savePredictionMessage");
+        const recommendationBox = document.getElementById("recommendationBox");
+
+        applyTheme(readDarkMode());
+        applyPageTranslations();
+
+        document.querySelectorAll("[data-language-select]").forEach(function (select) {
+            select.addEventListener("change", function () {
+                const selected = pageTranslations[select.value] ? select.value : "en";
+
+                try {
+                    localStorage.setItem(LANG_KEY, selected);
+                } catch (error) {
+                    console.warn("BuildAI: Could not save language preference.");
+                }
+
+                applyPageTranslations();
+
+                if (window.BuildAILanguage && typeof window.BuildAILanguage.setLanguage === "function") {
+                    window.BuildAILanguage.setLanguage(selected);
+                }
+            });
+        });
+
+        const themeToggle = document.getElementById("darkModeToggle");
+        if (themeToggle) {
+            themeToggle.addEventListener("change", function () {
+                setTheme(themeToggle.checked);
+            });
+        }
+
+        window.addEventListener("storage", function (event) {
+            if (event.key === THEME_KEY) applyTheme(event.newValue === "true");
+
+            if (event.key === LANG_KEY) {
+                applyPageTranslations();
+                if (window.BuildAILanguage && typeof window.BuildAILanguage.setLanguage === "function") {
+                    window.BuildAILanguage.setLanguage(currentLanguage());
+                }
+            }
+        });
+
+        document.addEventListener("buildai:languageChanged", function () {
+            applyPageTranslations();
+        });
+
+        const money = value => new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 0
+        }).format(Number(value) || 0);
+
+        function showMessage(text, type) {
+            message.className = "alert alert-" + type;
+            message.textContent = text;
+        }
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            if (!form.reportValidity()) return;
+
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i><span>' +
+                t("calculating") + '</span>';
+
+            message.textContent = "";
+            message.className = "";
+            saveMessage.textContent = "";
+
+            const payload = {
+                project_name: document.getElementById("projectName").value.trim(),
+                location: document.getElementById("location").value,
+                area: Number(document.getElementById("area").value),
+                floors: Number(document.getElementById("floors").value),
+                cement_price: Number(document.getElementById("cement").value),
+                steel_price: Number(document.getElementById("steel").value),
+                sand_price: Number(document.getElementById("sand").value),
+                brick_price: Number(document.getElementById("brick").value),
+                aggregate_price: Number(document.getElementById("aggregate").value),
+                labour_cost: Number(document.getElementById("labour").value),
+                material_quality: document.getElementById("materialQuality").value
+            };
+
+            try {
+                const response = await fetch("{{ url_for('predict') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message ||
+                        data.error ||
+                        (response.status === 401
+                            ? t("sessionExpired")
+                            : t("predictionFailed"))
+                    );
+                }
+
+                if (data.success !== true) {
+                    throw new Error(data.message || data.error || t("serverNotSuccessful"));
+                }
+
+                const total = Number(
+                    data.predicted_cost ??
+                    data.predicted_price ??
+                    data.cost
+                );
+
+                if (!Number.isFinite(total) || total < 0) {
+                    throw new Error(t("invalidCost"));
+                }
+
+                document.getElementById("predictedCost").textContent = money(total);
+                document.getElementById("showProjectName").textContent = data.project_name || payload.project_name;
+                document.getElementById("showLocation").textContent = data.location || payload.location;
+                document.getElementById("showArea").textContent = Number(data.area ?? payload.area).toLocaleString("en-IN");
+                document.getElementById("showFloor").textContent = data.floors ?? payload.floors;
+
+                const qualityNames = {
+                    Standard: t("standard"),
+                    Premium: t("premium"),
+                    Luxury: t("luxury")
+                };
+
+                const returnedQuality = data.material_quality || payload.material_quality;
+                document.getElementById("showQuality").textContent =
+                    qualityNames[returnedQuality] || returnedQuality;
+
+                const percentages = [25, 35, 12, 8, 20];
+                const ids = ["cementCost", "steelCost", "sandCost", "brickCost", "labourCost"];
+
+                ids.forEach(function (id, index) {
+                    document.getElementById(id).textContent = money(total * percentages[index] / 100);
+                });
+
+                recommendationBox.textContent = t("estimateDisclaimer");
+                resultCard.style.display = "block";
+
+                const chartCanvas = document.getElementById("pieChart");
+                if (costChart) costChart.destroy();
+
+                costChart = new Chart(chartCanvas, {
+                    type: "doughnut",
+                    data: {
+                        labels: chartLabels(),
+                        datasets: [{
+                            data: percentages,
+                            borderWidth: 2,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: "bottom" },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return context.label + ": " + context.parsed + "%";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                showMessage(data.message || t("predictionSuccess"), "success");
+
+                if (data.saved === true) {
+                    saveMessage.textContent = t("predictionSaved");
+                    saveMessage.className = "alert alert-success";
+                } else {
+                    saveMessage.textContent = t("predictionNotSaved");
+                    saveMessage.className = "alert alert-warning";
+                }
+
+                resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+            } catch (error) {
+                console.error("BuildAI prediction error:", error);
+                showMessage(error.message || t("predictionFailed"), "danger");
+                resultCard.style.display = "none";
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+                applyPageTranslations();
+            }
+        });
+    });
+})();
+</script>
+</body>
+</html>
